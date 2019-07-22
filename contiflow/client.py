@@ -10,7 +10,7 @@ from .fragment import FragmentCollection
 
 requests.packages.urllib3.disable_warnings()
 
-def init():
+def from_env():
     env = Environment()
 
     return Client(env)
