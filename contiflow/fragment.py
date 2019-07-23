@@ -71,6 +71,9 @@ class FragmentCollection:
         resp = requests.get(self.url + "/" + fragmentId, stream=True, verify=False)
         return self.__download__(resp, handle)
 
+    def uploadEnv(self, fragment, handle):
+        self.upload(self.env.job, self.env.step, fragment, handle)
+
     def upload(self, jobId, step, fragment, handle):
         if not jobId:
             raise ApiError("jobId not given")
