@@ -11,7 +11,17 @@ from .fragment import FragmentCollection
 requests.packages.urllib3.disable_warnings()
 
 def from_env():
-    env = Environment()
+    host = os.environ.get('MLCYCLE_HOST')
+    project = os.environ.get('MLCYCLE_PROJECT')
+    job = os.environ.get('MLCYCLE_JOB')
+    step = os.environ.get('MLCYCLE_STEP')
+
+    env = Environment(host, project, job, step)
+
+    return Client(env)
+
+def init_with(host):
+    env = Environment(host)
 
     return Client(env)
 

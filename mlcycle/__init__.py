@@ -1,2 +1,2 @@
 from .apierror import ApiError
-from .client import from_env
+from .client import from_env, init_with

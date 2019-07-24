@@ -4,9 +4,9 @@ from .apierror import ApiError
 from .environment import Environment
 
 class Scheduler:
-    env = Environment()
+    env:Environment
     url = None
-
+    
     def __init__(self, env):
         self.env = env
         self.url = self.env.getBaseUrl() + "/scheduler"

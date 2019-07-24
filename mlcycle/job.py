@@ -4,7 +4,7 @@ from .apierror import ApiError
 from .environment import Environment
 
 class JobCollection:
-    env = Environment()
+    env:Environment
     
     def __init__(self, env):
         self.env = env
