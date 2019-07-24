@@ -1,5 +1,3 @@
-import os
-
 class Environment:
     host = None
     project = None
