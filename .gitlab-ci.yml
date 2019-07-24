@@ -9,6 +9,8 @@ before_script:
 
 deploy_PYPI:
   stage: deploy
+  tags:
+    - defaultjavarunner
   variables:
     TWINE_USERNAME: $PYPI_USERNAME
     TWINE_PASSWORD: $PYPI_PASSWORD
