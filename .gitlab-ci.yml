@@ -16,5 +16,4 @@ deploy_PYPI:
     TWINE_PASSWORD: $PYPI_PASSWORD
   script:
     - twine upload dist/*
-  only:
-    - tags
+  when: manual
