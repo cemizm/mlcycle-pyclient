@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mlcycle",
-    version=0.1.5,
+    version='0.1.5',
     url="http://git01-ifm-min.ad.fh-bielefeld.de/pvserve2/mlcycle",
     author="Cem Basoglu",
     author_email="cem.basoglu@fh-bielefeld.de",
