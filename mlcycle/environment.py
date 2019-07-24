@@ -17,7 +17,7 @@ class Environment:
 
     def getProject(self):
         return self.project
-    
+
     def getJob(self):
         return self.job
 

@@ -6,7 +6,7 @@ from .environment import Environment
 class Scheduler:
     env:Environment
     url = None
-    
+
     def __init__(self, env):
         self.env = env
         self.url = self.env.getBaseUrl() + "/scheduler"
@@ -18,28 +18,28 @@ class Scheduler:
             return []
         elif resp.status_code != 200:
             return False
-        
+
         return resp.json()
 
     def claim(self, jobId, step):
         self.check(jobId, step)
 
         resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/claim", verify=False)
-        
+
         return resp.status_code == 200
 
     def complete(self, jobId, step):
         self.check(jobId, step)
 
         resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/complete", verify=False)
-        
+
         return resp.status_code == 200
 
     def error(self, jobId, step):
         self.check(jobId, step)
 
         resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/error", verify=False)
-        
+
         return resp.status_code == 200
 
     def check(self, jobId, step):
