@@ -61,7 +61,11 @@ class JobCollection:
 
         return resp.json()
 
-    def addMetrics(self, jobId, step, metrics):
+    def addMetrics(self, metrics, jobId=None, step=None):
+        if not jobId and not step:
+            jobId = self.env.getJob()
+            step = self.env.getStep()
+
         if not jobId:
             raise ApiError("jobId not given")
 

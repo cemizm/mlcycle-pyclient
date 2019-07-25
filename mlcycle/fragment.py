@@ -34,7 +34,10 @@ class FragmentCollection:
         return resp.json()
 
 
-    def getLatestByJob(self, jobId, name, handle):
+    def getLatestByJob(self, name, handle, jobId=None):
+        if not jobId:
+            jobId = self.env.getJob()
+
         if not jobId:
             raise ApiError("jobId not given")
 
@@ -71,10 +74,11 @@ class FragmentCollection:
         resp = requests.get(self.url + "/" + fragmentId, stream=True, verify=False)
         return self.__download__(resp, handle)
 
-    def uploadEnv(self, fragment, handle):
-        self.upload(self.env.job, self.env.step, fragment, handle)
+    def upload(self, fragment, handle, jobId=None, step=None):
+        if not jobId and not step:
+            jobId = self.env.getJob()
+            step = self.env.getStep()
 
-    def upload(self, jobId, step, fragment, handle):
         if not jobId:
             raise ApiError("jobId not given")
 
