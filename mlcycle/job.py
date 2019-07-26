@@ -3,15 +3,16 @@ import requests
 from .apierror import ApiError
 from .environment import Environment
 
+
 class JobCollection:
-    env:Environment
+    env: Environment
 
     def __init__(self, env):
         self.env = env
 
-        self.url = self.env.getBaseUrl() + "/jobs"
+        self.url = self.env.get_base_url() + "/jobs"
 
-    def getAll(self):
+    def get_all(self):
         resp = requests.get(self.url, verify=False)
 
         if resp.status_code != 200:
@@ -19,20 +20,20 @@ class JobCollection:
 
         return resp.json()
 
-    def getById(self, jobId):
-        if not jobId:
-            raise ApiError("jobId not given")
+    def get_by_id(self, job_id):
+        if not job_id:
+            raise ApiError("job_id not given")
 
-        resp = requests.get(self.url + "/" + jobId, verify=False)
+        resp = requests.get(self.url + "/" + job_id, verify=False)
 
         if resp.status_code != 200:
             return False
 
         return resp.json()
 
-    def addSteps(self, jobId, steps):
-        if not jobId:
-            raise ApiError("jobId not given")
+    def add_steps(self, job_id, steps):
+        if not job_id:
+            raise ApiError("job_id not given")
 
         if not steps or len(steps) == 0:
             raise ApiError("No steps given")
@@ -52,21 +53,21 @@ class JobCollection:
                 build = docker['buildConfiguration']
 
                 if "dockerfile" not in build:
-                    raise ApiError("dockerfile for build configuraiton not set")
+                    raise ApiError("dockerfile for build configuration not set")
 
-        resp = requests.post(self.url + "/" + jobId + "/steps", json=steps, verify=False)
+        resp = requests.post(self.url + "/" + job_id + "/steps", json=steps, verify=False)
 
         if resp.status_code != 200:
             return False
 
         return resp.json()
 
-    def addMetrics(self, metrics, jobId=None, step=None):
-        if not jobId and not step:
-            jobId = self.env.getJob()
+    def add_metrics(self, metrics, job_id=None, step=None):
+        if not job_id and not step:
+            job_id = self.env.getJob()
             step = self.env.getStep()
 
-        if not jobId:
+        if not job_id:
             raise ApiError("jobId not given")
 
         if not str(step):
@@ -75,24 +76,20 @@ class JobCollection:
         if not metrics or len(metrics) == 0:
             raise ApiError("No steps given")
 
-        resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/metrics", json=metrics, verify=False)
+        resp = requests.post(self.url + "/" + job_id + "/step/" + str(step) + "/metrics", json=metrics, verify=False)
 
         if resp.status_code != 200:
             return False
 
         return resp.json()
 
-    def trigger(self, projectId):
-        if not projectId:
-            raise ApiError("projectId not given")
+    def trigger(self, project_id):
+        if not project_id:
+            raise ApiError("project_id not given")
 
-        resp = requests.post(self.url + "/project/" + projectId + "/trigger", verify=False)
+        resp = requests.post(self.url + "/project/" + project_id + "/trigger", verify=False)
 
         if resp.status_code != 200:
             return False
 
         return resp.json()
-
-
-
-

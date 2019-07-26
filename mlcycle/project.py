@@ -3,15 +3,16 @@ import requests
 from .apierror import ApiError
 from .environment import Environment
 
+
 class ProjectCollection:
-    env:Environment
+    env: Environment
 
     def __init__(self, env):
         self.env = env
 
-        self.url = self.env.getBaseUrl() + "/projects"
+        self.url = self.env.get_base_url() + "/projects"
 
-    def getAll(self):
+    def get_all(self):
         resp = requests.get(self.url, verify=False)
 
         if resp.status_code != 200:
@@ -19,11 +20,11 @@ class ProjectCollection:
 
         return resp.json()
 
-    def getById(self, projectId):
-        if not projectId:
-            raise ApiError("project not given")
+    def get_by_id(self, project_id):
+        if not project_id:
+            raise ApiError("project_id not given")
 
-        resp = requests.get(self.url + "/" + projectId, verify=False)
+        resp = requests.get(self.url + "/" + project_id, verify=False)
 
         if resp.status_code != 200:
             return False
@@ -40,23 +41,23 @@ class ProjectCollection:
 
         return resp.json()
 
-    def update(self, projectId, project):
-        if not projectId:
-            raise ApiError("project id not given")
+    def update(self, project_id, project):
+        if not project_id:
+            raise ApiError("project_id not given")
 
         self.check(project)
 
-        resp = requests.put(self.url + "/" + projectId, json=project, verify=False)
+        resp = requests.put(self.url + "/" + project_id, json=project, verify=False)
         if resp.status_code != 200:
             return False
 
         return resp.json()
 
-    def delete(self, projectId):
-        if not projectId:
-            raise ApiError("project id ist not given")
+    def delete(self, project_id):
+        if not project_id:
+            raise ApiError("project_id ist not given")
 
-        resp = requests.delete(self.url + "/" + projectId, verify=False)
+        resp = requests.delete(self.url + "/" + project_id, verify=False)
 
         return resp.status_code == 200
 
@@ -69,4 +70,3 @@ class ProjectCollection:
 
         if 'gitRepository' not in project or project['gitRepository'] == "":
             raise ApiError('git repository not set')
-

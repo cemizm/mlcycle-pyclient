@@ -11,6 +11,7 @@ from .fragment import FragmentCollection
 
 requests.packages.urllib3.disable_warnings()
 
+
 def from_env():
     host = os.environ.get('MLCYCLE_HOST')
     project = os.environ.get('MLCYCLE_PROJECT')
@@ -21,19 +22,21 @@ def from_env():
 
     return Client(env)
 
+
 def init_with(host):
     env = Environment(host)
 
     return Client(env)
 
-class Client:
-    env:Environment
 
-    Workers:WorkerCollection
-    Projects:ProjectCollection
-    Jobs:JobCollection
-    Scheduler:Scheduler
-    Fragments:FragmentCollection
+class Client:
+    env: Environment
+
+    Workers: WorkerCollection
+    Projects: ProjectCollection
+    Jobs: JobCollection
+    Scheduler: Scheduler
+    Fragments: FragmentCollection
 
     def __init__(self, environment):
         self.env = environment

@@ -10,16 +10,14 @@ class Environment:
         self.job = job
         self.step = step
 
-    def getBaseUrl(self):
+    def get_base_url(self):
         return self.host
 
-    def getProject(self):
+    def get_project(self):
         return self.project
 
-    def getJob(self):
+    def get_job(self):
         return self.job
 
-    def getStep(self):
+    def get_step(self):
         return self.step
-
-
