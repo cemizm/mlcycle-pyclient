@@ -3,15 +3,16 @@ import requests
 from .apierror import ApiError
 from .environment import Environment
 
+
 class WorkerCollection:
-    env:Environment
+    env: Environment
 
     def __init__(self, env):
         self.env = env
 
-        self.url = self.env.getBaseUrl() + "/workers"
+        self.url = self.env.get_base_url() + "/workers"
 
-    def getAll(self):
+    def get_all(self):
         resp = requests.get(self.url, verify=False)
 
         if resp.status_code != 200:
@@ -19,11 +20,11 @@ class WorkerCollection:
 
         return resp.json()
 
-    def getById(self, workerId):
-        if not workerId:
+    def get_by_id(self, worker_id):
+        if not worker_id:
             raise ApiError("workerId not given")
 
-        resp = requests.get(self.url + "/" + workerId, verify=False)
+        resp = requests.get(self.url + "/" + worker_id, verify=False)
 
         if resp.status_code != 200:
             return False
@@ -40,23 +41,23 @@ class WorkerCollection:
 
         return resp.json()
 
-    def update(self, workerId, worker):
-        if not workerId:
+    def update(self, worker_id, worker):
+        if not worker_id:
             raise ApiError("workerId not given")
 
         self.check(worker)
 
-        resp = requests.put(self.url + "/" + workerId, json=worker, verify=False)
+        resp = requests.put(self.url + "/" + worker_id, json=worker, verify=False)
         if resp.status_code != 200:
             return False
 
         return resp.json()
 
-    def delete(self, workerId):
-        if not workerId:
+    def delete(self, worker_id):
+        if not worker_id:
             raise ApiError("workerId is not given")
 
-        resp = requests.delete(self.url + "/" + workerId, verify=False)
+        resp = requests.delete(self.url + "/" + worker_id, verify=False)
 
         return resp.status_code == 200
 
@@ -66,4 +67,3 @@ class WorkerCollection:
 
         if 'name' not in worker or worker['name'] == "":
             raise ApiError("worker name not set")
-

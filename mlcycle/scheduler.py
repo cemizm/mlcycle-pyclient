@@ -3,15 +3,16 @@ import requests
 from .apierror import ApiError
 from .environment import Environment
 
+
 class Scheduler:
-    env:Environment
+    env: Environment
     url = None
 
     def __init__(self, env):
         self.env = env
-        self.url = self.env.getBaseUrl() + "/scheduler"
+        self.url = self.env.get_base_url() + "/scheduler"
 
-    def getPending(self):
+    def get_pending(self):
         resp = requests.get(self.url, verify=False)
 
         if resp.status_code == 408:
@@ -21,30 +22,30 @@ class Scheduler:
 
         return resp.json()
 
-    def claim(self, jobId, step):
-        self.check(jobId, step)
+    def claim(self, job_id, step):
+        self.check(job_id, step)
 
-        resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/claim", verify=False)
-
-        return resp.status_code == 200
-
-    def complete(self, jobId, step):
-        self.check(jobId, step)
-
-        resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/complete", verify=False)
+        resp = requests.post(self.url + "/" + job_id + "/step/" + str(step) + "/claim", verify=False)
 
         return resp.status_code == 200
 
-    def error(self, jobId, step):
-        self.check(jobId, step)
+    def complete(self, job_id, step):
+        self.check(job_id, step)
 
-        resp = requests.post(self.url + "/" + jobId + "/step/" + str(step) + "/error", verify=False)
+        resp = requests.post(self.url + "/" + job_id + "/step/" + str(step) + "/complete", verify=False)
 
         return resp.status_code == 200
 
-    def check(self, jobId, step):
-        if not jobId:
-            raise ApiError("jobid not set")
+    def error(self, job_id, step):
+        self.check(job_id, step)
+
+        resp = requests.post(self.url + "/" + job_id + "/step/" + str(step) + "/error", verify=False)
+
+        return resp.status_code == 200
+
+    def check(self, job_id, step):
+        if not job_id:
+            raise ApiError("job_id not set")
 
         if not str(step):
             raise ApiError("step not set")
