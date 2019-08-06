@@ -1,4 +1,13 @@
 class Environment:
+    """Environmente
+
+    Attributes:
+        host: base url for requests
+        project: current project
+        job: current job
+        step: current step
+
+    """
     host = None
     project = None
     job = None
