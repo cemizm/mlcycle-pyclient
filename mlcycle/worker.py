@@ -1,7 +1,9 @@
 import requests
+import dataclasses
 
 from .apierror import ApiError
 from .environment import Environment
+from .models import Worker
 
 
 class WorkerCollection:
@@ -20,18 +22,22 @@ class WorkerCollection:
         self.url = self.env.get_base_url() + "/workers"
 
     def get_all(self):
-        """Get all workers as a json
+        """Get a list of worker objects
 
         Return:
-            json: a list of every worker, False if the Request fails
+            a list of Worker Objects, False if the Request fails
 
         """
         resp = requests.get(self.url, verify=False)
 
         if resp.status_code != 200:
             return False
+        
+        worker_list = []
 
-        return resp.json()
+        for elem in resp.json():
+            worker_list.append(Worker(**elem))
+        return worker_list
 
     def get_by_id(self, worker_id):
         """Get a worker with a specific id as a json
@@ -40,7 +46,7 @@ class WorkerCollection:
             worker_id: id of a specific worker
 
         Return:
-            json: a single worker, False if the Request fails
+            a worker object, False if the Request fails
 
         Raises:
             ApiError: If the worker_id is not valid
@@ -54,38 +60,38 @@ class WorkerCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Worker(**resp.json())
 
-    def add(self, worker):
+    def add(self, worker: Worker):
         """Add a worker
 
         Args:
-            worker: a worker you want to create as a json
-                {"name": "Worker 1"}
+            worker: a worker object
         
         Return:
-            json: returns the added worker, False if the Request fails
+            returns the successfully added worker object, False if the Request fails
 
         """
         self.check(worker)
 
-        resp = requests.post(self.url, json=worker, verify=False)
+        worker_json = {"name": worker.name}
+
+        resp = requests.post(self.url, json=worker_json, verify=False)
 
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Worker(**resp.json())
 
-    def update(self, worker_id, worker):
+    def update(self, worker_id, worker: Worker):
         """Update a Worker with a specific ID
 
         Args:
-            worker: updated version of the worker, as a json
-                {"name": "Worker new"}
             worker_id: id of the worker, you want to change
+            worker: updated version of the worker, as an object
         
         Return:
-            json: returns the updated worker, False if the Request fails
+            returns the updated worker object, False if the Request fails
 
         Raises:
             ApiError: If the worker_id is not given
@@ -95,12 +101,14 @@ class WorkerCollection:
             raise ApiError("worker_id not given")
 
         self.check(worker)
+        
+        worker_json = {"name": worker.name}
 
-        resp = requests.put(self.url + "/" + worker_id, json=worker, verify=False)
+        resp = requests.put(self.url + "/" + worker_id, json=worker_json, verify=False)
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Worker(**resp.json())
 
     def delete(self, worker_id):
         """Delete a Worker with a specific ID
@@ -122,19 +130,19 @@ class WorkerCollection:
 
         return resp.status_code == 200
 
-    def check(self, worker):
+    def check(self, worker: Worker):
         """Check if the worker and his name are set
 
         Args:
             worker: the worker you want to check
 
         Raises:
-            ApiError: If the worker is not set
+            ApiError: If the worker is not a dataclass
             ApiError: If the worker has no name
 
         """
-        if not worker:
-            raise ApiError("worker not set")
+        if not dataclasses.is_dataclass(worker):
+            raise ApiError("worker not a dataclass")
 
-        if 'name' not in worker or worker['name'] == "":
+        if worker.name == "" or worker.name == None:
             raise ApiError("worker name not set")

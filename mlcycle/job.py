@@ -1,7 +1,9 @@
 import requests
+import dataclasses
 
 from .apierror import ApiError
 from .environment import Environment
+from .models import Job, Project, Step, DockerConfiguration, DockerBuildConfiguration
 
 
 class JobCollection:
@@ -21,9 +23,10 @@ class JobCollection:
 
     def get_all(self):
         """Get all existing jobs
+            without fragments of steps
         
         Return:
-            json: a list of every Job, False if the Request fails
+            json: a list of Job objects, False if the Request fails
 
         """
         resp = requests.get(self.url, verify=False)
@@ -31,16 +34,20 @@ class JobCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        job_list = []
+        for elem in resp.json():
+            job_list.append(Job(**elem))
+        return job_list
 
     def get_by_id(self, job_id):
         """Get a Job with a specific id as a json
+            with fragments of steps
 
         Args:
             job_id: id of a specific job
 
         Return:
-            json: a single job, False if the Request fails
+            json: a job object, False if the Request fails
 
         Raises:
             ApiError: If the job_id is not valid
@@ -54,7 +61,7 @@ class JobCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Job(**resp.json())
 
     def add_steps(self, job_id, steps):
         """Add steps to a specific job
@@ -64,7 +71,7 @@ class JobCollection:
             steps: a list of one or more steps, you want to add to the job
 
         Return:
-            json: the updated job, False if the Request fails
+            object of the updated job, False if the Request fails
 
         Raises:
             ApiError: If the Attributes are not set properly
@@ -76,29 +83,33 @@ class JobCollection:
         if not steps or len(steps) == 0:
             raise ApiError("No steps given")
 
+        step_list = []
+
         for step in steps:
-            if "name" not in step:
+            if not step.name:
                 raise ApiError("step name not set")
-            if "docker" not in step:
+            if not step.docker:
                 raise ApiError("docker configuration not set")
 
-            docker = step['docker']
+            docker = step.docker
 
-            if "image" not in docker:
-                if "buildConfiguration" not in docker:
+            if not docker.image:
+                if not docker.build_configuration:
                     raise ApiError("neither an image nor a build configuration is set")
 
-                build = docker['buildConfiguration']
+                build = docker.build_configuration
 
-                if "dockerfile" not in build:
+                if not build.dockerfile:
                     raise ApiError("dockerfile for build configuration not set")
 
-        resp = requests.post(self.url + "/" + job_id + "/steps", json=steps, verify=False)
+            step_list.append(dataclasses.asdict(step))
+
+        resp = requests.post(self.url + "/" + job_id + "/steps", json=step_list, verify=False)
 
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Job(**resp.json())
 
     def add_metrics(self, metrics, job_id=None, step=None):
         """Add metrics to a step of a specific job
@@ -110,35 +121,36 @@ class JobCollection:
             metrics: the metrics you want to add
             job_id: the id of a specific job, by default it is none and gets
                 the step from the environment
-            step: the step to which you want to add metrics, by default it is
+            step: (number)the step to which you want to add metrics, by default it is
                 none and gets the step from the environment
 
         Return:
-            json: the updated job, False if the Request fails
+            object of the updated job, False if the Request fails
 
         Raises:
             ApiError: If the Attributes are not set properly
 
         """
         if not job_id and not step:
-            job_id = self.env.getJob()
-            step = self.env.getStep()
+            job_id = self.env.get_job()
+            step = self.env.get_step()
 
+        
         if not job_id:
-            raise ApiError("jobId not given")
+            raise ApiError("job_id not given")
 
         if not str(step):
             raise ApiError("step not given")
 
         if not metrics or len(metrics) == 0:
-            raise ApiError("No steps given")
+            raise ApiError("No metrics given")
 
         resp = requests.post(self.url + "/" + job_id + "/step/" + str(step) + "/metrics", json=metrics, verify=False)
 
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Job(**resp.json())
 
     def trigger(self, project_id):
         """Start the pipeline of a specific project
@@ -147,7 +159,7 @@ class JobCollection:
             project_id: the specific project you want to start
 
         Return:
-            json: the started job, False if the Request fails
+            object of the started job, False if the Request fails
 
         Raises:
             ApiError: If the project_id is not given
@@ -160,5 +172,4 @@ class JobCollection:
 
         if resp.status_code != 200:
             return False
-
-        return resp.json()
+        return Job(**resp.json())
