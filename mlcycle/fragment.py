@@ -1,8 +1,9 @@
 import requests
+import dataclasses
 
 from .apierror import ApiError
 from .environment import Environment
-
+from .models import Fragment
 
 class FragmentCollection:
     """A Collection of Fragments
@@ -40,14 +41,17 @@ class FragmentCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        fragment_list = []
+        for elem in resp.json():
+            fragment_list.append(Fragment(**elem))
+        return fragment_list
 
     def get_all_by_step(self, job_id, step):
         """Get all fragments of a specific job and a specific step as a json
 
         Args:
             job_id: id of a specific job
-            step: id of a specific step
+            step: step number
 
         Return:
             json: a list of fragments of the specific job and step
@@ -64,7 +68,10 @@ class FragmentCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        fragment_list = []
+        for elem in resp.json():
+            fragment_list.append(Fragment(**elem))
+        return fragment_list
 
 
     def get_latest_by_job(self, name, handle, job_id=None):
@@ -73,8 +80,8 @@ class FragmentCollection:
         Args:
             job_id: id of a specific job, by default it is none and gets
                 the job from the environment
-            name: name of a specific fragment
-            handle: a filehandler in write mode
+            name: filename of a specific fragment
+            handle: a filehandler in writebyte (wb) mode
 
         Return:
             True if the download succeeds, False otherwise
@@ -105,8 +112,8 @@ class FragmentCollection:
         Args:
             project_id: id of a specific project, by default it is none and gets
                 the project from the environment
-            name: name of a specific fragment
-            handle: a filehandler in write mode
+            name: filename of a specific fragment
+            handle: a filehandler in writebyte (wb) mode
 
         Return:
             True if the download succeeds, False otherwise
@@ -152,16 +159,11 @@ class FragmentCollection:
         return self.__download__(resp, handle)
 
 
-    def upload(self, fragment, handle, job_id=None, step=None):
-        """Uploads fragments
+    def upload(self, fragment: Fragment, handle, job_id=None, step=None):
+        """Uploads a fragment to a running step
 
         Args:
-            fragment: fragment with at least the following attributes
-                {
-                "name": "Console Log",
-                "filename": "0_console.log"
-                "type": 1
-                }
+            fragment: object of the type fragment
             handle: a filehandler in read mode
             job_id: id of a specific job, by default it is none and gets
                 the job from the environment
@@ -169,7 +171,7 @@ class FragmentCollection:
                 the current step from the environment
 
         Return:
-            json: response of the successfull request, False otherwise
+            json: response of the successful request, False otherwise
 
         Raises:
             ApiError: If the parameters are not properly set
@@ -182,19 +184,22 @@ class FragmentCollection:
         if not job_id:
             raise ApiError("job_id not given")
 
-        if "name" not in fragment:
+        if not dataclasses.is_dataclass(fragment):
+            raise ApiError("type not in fragment")
+
+        if fragment.name is None:
             raise ApiError("name not in fragment")
 
-        if "filename" not in fragment:
+        if fragment.filename is None: 
             raise ApiError("filename not in fragment")
 
-        if "type" not in fragment:
+        if fragment.type is None: 
             raise ApiError("type not in fragment")
 
         data = {
-            "Name": fragment['name'],
-            "Filename": fragment['filename'],
-            "Type": fragment['type']
+            "Name": fragment.name,
+            "Filename": fragment.filename,
+            "Type": fragment.type
         }
         files = {
             "BinaryData": handle
@@ -206,7 +211,7 @@ class FragmentCollection:
             print(resp.text)
             return False
 
-        return resp.json()
+        return Fragment(**resp.json())
 
 
     def __download__(self, resp, handle):
@@ -217,7 +222,7 @@ class FragmentCollection:
             handle: a filehandler in write mode
 
         Return:
-            True, but False if the Response has a statuscode of 200
+            True if successful, but False if the Response has a statuscode of 200
 
         """
         #write handle

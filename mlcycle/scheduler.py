@@ -2,6 +2,7 @@ import requests
 
 from .apierror import ApiError
 from .environment import Environment
+from .models import Job
 
 
 class Scheduler:
@@ -23,18 +24,8 @@ class Scheduler:
         """get all pending steps of a job of a project
 
         Return:
-            a json with an element for each pending step in the form of
-            [{
-                "projectId": "4b7dc95e-76ad-4843-bdc9-2811e8467ebd",
-                "jobId": "b95b7131-d5ed-44f7-904b-848336367f59",
-                "created": "2019-08-05T11:17:37.472Z",
-                "initiator": 0,
-                "step": {
-                    "number": 0,
-                    "name": "Bootstrap"
-                }
-            }]
-            , or an empty array if the request has a timeout or False if the Request fails
+            a list of Job Objects, or an empty array if the request has a
+            timeout or False if the Request fails
 
         """
         resp = requests.get(self.url, verify=False)
@@ -44,15 +35,18 @@ class Scheduler:
         elif resp.status_code != 200:
             return False
 
-        return resp.json()
+        job_list = []
+        for elem in resp.json():
+            job_list.append(Job(**elem))
+        return job_list
 
     def claim(self, job_id, step):
         """Claim a step of a specific job
 
         Args:
             job_id: id of a specific job
-            step: a specific step
-
+            step: number of the step
+            
         Return:
             True on success, False otherwise
 
@@ -71,7 +65,7 @@ class Scheduler:
 
         Args:
             job_id: id of a specific job
-            step: a specific step
+            step: number of the step
 
         Return:
             True on success, False otherwise
@@ -91,7 +85,7 @@ class Scheduler:
 
         Args:
             job_id: id of a specific job
-            step: a specific step
+            step: number of the step
 
         Return:
             True on success, False otherwise
@@ -111,7 +105,7 @@ class Scheduler:
 
         Args:
             job_id: id of a specific job
-            step: a specific step
+            step: number of the step
 
         Raises:
             ApiError: If the job_id or step are not given

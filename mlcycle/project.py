@@ -1,7 +1,9 @@
 import requests
+import dataclasses
 
 from .apierror import ApiError
 from .environment import Environment
+from .models import Project
 
 
 class ProjectCollection:
@@ -23,15 +25,21 @@ class ProjectCollection:
         """Get all projects as a json
 
         Return:
-            json: a list of every project, False if the Request fails
+            a list of Project Objects, False if the Request fails
 
         """
         resp = requests.get(self.url, verify=False)
 
+        print(self.url)
+
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        project_list = []
+
+        for elem in resp.json():
+            project_list.append(Project(**elem))
+        return project_list
 
     def get_by_id(self, project_id):
         """Get a project with a specific id as a json
@@ -40,7 +48,7 @@ class ProjectCollection:
             project_id: id of a specific project
 
         Return:
-            json: a single project, False if the Request fails
+            a project object, False if the Request fails
 
         Raises:
             ApiError: If the project_id is not valid
@@ -54,43 +62,38 @@ class ProjectCollection:
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Project(**resp.json())
 
-    def add(self, project):
+    def add(self, project: Project):
         """Add a project
 
         Args:
-            project: a project you want to create as a json
-                {
-                "name": "Project 1",
-                "gitrepository": "https://github.com/cemizm/tf-benchmark-gpu.git"
-                }
+            project: a project object
+
         Return:
-            json: returns the added project, False if the Request fails
+            returns the added project object, False if the Request fails
 
         """
         self.check(project)
 
-        resp = requests.post(self.url, json=project, verify=False)
+        project_json = {"name": project.name, "gitRepository": project.git_repository}
+
+        resp = requests.post(self.url, json=project_json, verify=False)
 
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Project(**resp.json())
 
-    def update(self, project_id, project):
+    def update(self, project_id, project: Project):
         """Update a project with a specific ID
 
         Args:
             project_id: id of the project, you want to change
-            project: updated version of the project, as a json
-                {
-                "name": "Mein Project 1",
-	            "gitrepository": "https://github.com/cemizm/tf-benchmark-gpu.git"
-                }
+            project: updated version of the project, as an object
         
         Return:
-            json: returns the updated project, False if the Request fails
+            returns the updated project object, False if the Request fails
 
         Raises:
             ApiError: If the project_id is not given
@@ -101,11 +104,13 @@ class ProjectCollection:
 
         self.check(project)
 
-        resp = requests.put(self.url + "/" + project_id, json=project, verify=False)
+        project_json = {"name": project.name, "gitRepository": project.git_repository}
+
+        resp = requests.put(self.url + "/" + project_id, json=project_json, verify=False)
         if resp.status_code != 200:
             return False
 
-        return resp.json()
+        return Project(**resp.json())
 
     def delete(self, project_id):
         """Delete a project with a specific ID
@@ -127,23 +132,24 @@ class ProjectCollection:
 
         return resp.status_code == 200
 
-    def check(self, project):
+    def check(self, project: Project):
         """Check if the project,name and git repository are set
 
         Args:
             project: the project you want to check
 
         Raises:
-            ApiError: If the project is not set
+            ApiError: If the project is not a dataclass
             ApiError: If the project has no name
             ApiError: If the project has no gitrepository
 
         """
-        if not project:
-            raise ApiError("project not set")
 
-        if 'name' not in project or project['name'] == "":
+        if not dataclasses.is_dataclass(project):
+            raise ApiError("project not a dataclass")
+
+        if project.name == "" or project.name == None:
             raise ApiError("project name not set")
 
-        if 'gitRepository' not in project or project['gitRepository'] == "":
+        if project.git_repository == "" or project.git_repository == None:
             raise ApiError('git repository not set')
