@@ -30,8 +30,6 @@ class ProjectCollection:
         """
         resp = requests.get(self.url, verify=False)
 
-        print(self.url)
-
         if resp.status_code != 200:
             return False
 

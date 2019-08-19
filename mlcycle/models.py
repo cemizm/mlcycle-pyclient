@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
 from enum import Enum
 
 
@@ -85,7 +85,10 @@ class DockerConfiguration:
         if buildConfiguration is None:
             self.build_configuration = None
         else:
-            self.build_configuration = DockerBuildConfiguration(**buildConfiguration)
+            if is_dataclass(buildConfiguration):
+                self.build_configuration = buildConfiguration
+            else:
+                self.build_configuration = DockerBuildConfiguration(**buildConfiguration)
         self.properties = properties
 
 @dataclass
@@ -111,14 +114,20 @@ class Step:
         if docker is None:
             self.docker = None
         else:
-            self.docker = DockerConfiguration(**docker)
+            if is_dataclass(docker):
+                self.docker = docker
+            else:
+                self.docker = DockerConfiguration(**docker)
         self.metrics = metrics
         if fragments is None:
             self.fragments = None
         else:
             self.fragments = []
             for fragment in fragments:
-                self.fragments.append(Fragment(**fragment))
+                if is_dataclass(fragment):
+                    self.fragments.append(fragment)
+                else:
+                    self.fragments.append(Fragment(**fragment))
         self.id = id
 
 @dataclass
@@ -139,15 +148,25 @@ class Job:
         self.state = state
         self.initiator = initiator
         self.steps = []
+        
         if step is not None:
-            self.steps.append(Step(**step))
+            if is_dataclass(step):
+                self.steps.append(step)
+            else:
+                self.steps.append(Step(**step))
         if steps is not None:
             for step in steps:
-                self.steps.append(Step(**step))
+                if is_dataclass(step):
+                    self.steps.append(step)
+                else:
+                    self.steps.append(Step(**step))
         if project is None:
             self.project = None
         else:
-            self.project = Project(**project)
+            if is_dataclass(project):
+                self.project = project
+            else:
+                self.project = Project(**project)
         self.project_id = projectId
         self.created = created
         self.finished = finished
