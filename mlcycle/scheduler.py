@@ -3,6 +3,7 @@ import requests
 from .apierror import ApiError
 from .environment import Environment
 from .models import Job
+from uuid import UUID
 
 
 class Scheduler:
@@ -116,3 +117,11 @@ class Scheduler:
 
         if not str(step):
             raise ApiError("step not set")
+
+        try:
+            UUID(job_id, version=4)
+        except ValueError:
+            raise ApiError("not a valid job_id")
+
+        if not str(step).isdigit():
+            raise ApiError("not a valid step number")
