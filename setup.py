@@ -14,8 +14,19 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT',
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["*.tests"]),
     install_requires=[
         'requests'
-    ]
+    ],
+    tests_require=[
+        'httmock'
+    ],
+    test_suite="mlcycle.tests",
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3.7',
+        'License :: OSI Approved :: MIT License',
+    ],
 )
